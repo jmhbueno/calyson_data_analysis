@@ -1,0 +1,28 @@
+{
+    "id": "E56D8D7B",
+    "path": "~/R/Clayson/data_analysis.Rmd",
+    "project_path": "data_analysis.Rmd",
+    "type": "r_markdown",
+    "hash": "4257053229",
+    "contents": "",
+    "dirty": false,
+    "created": 1663159393297.0,
+    "source_on_save": false,
+    "relative_order": 1,
+    "properties": {
+        "chunk_output_type": "console",
+        "source_window_id": "",
+        "Source": "Source",
+        "cursorPosition": "349,35",
+        "scrollLine": "332",
+        "docOutlineVisible": "0"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1663619433,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1663619433788,
+    "read_only": false,
+    "read_only_alternatives": []
+}

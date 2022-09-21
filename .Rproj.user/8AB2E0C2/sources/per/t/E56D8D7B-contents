@@ -1,0 +1,357 @@
+---
+title: "Introdução ao R"
+author: "Maurício Bueno"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    toc: yes
+    toc_float:
+      collapsed: no
+  word_document:
+    toc: yes
+editor_options:
+  chunk_output_type: console
+---
+
+```{r echo=FALSE}
+knitr::opts_chunk$set(echo=TRUE, warning=FALSE, message=FALSE)
+```
+
+# Ativação dos pacotes
+
+```{r}
+library(readxl)
+library(tidyverse)
+library(knitr)
+library(expss)
+library(psych)
+library(qgraph)
+
+```
+
+# Importação do banco de dados
+
+```{r}
+df1 <- 
+read.csv("clayson_data_analysis.csv",
+         stringsAsFactors = TRUE,
+         blank.lines.skip = TRUE,
+         encoding = "UTF-8")
+
+```
+
+
+# Limpeza do banco de dados
+```{r}
+df1 <- 
+df1 %>% rename_with(.cols = 1:84,
+                    .fn=~c(c("id","tcle","genero","idade","estado_civil","etnia",
+                             "escolaridade","estado","cidade",
+                             "ativ_satisfação","frequência","profissional"),
+                             paste("f",1:36,sep = ""),
+                             paste("ice",1:34,sep = ""),
+                             c("teste","email")))
+
+glimpse(df1)
+```
+
+# Propriedades psicométricas do ICE-R
+
+## Inversão dos itens negativos
+
+```{r}
+# recode(df1[ ,c('ice3','ice16','ice28')]) <- c(1~5,2~4,3~3,4~2,5~1)
+# OBS: o comando foi desligado porque a inversão já foi feita. Os itens já estão invertidos no objeto df1
+```
+
+
+## Fidedignidade
+
+```{r}
+# Fidedignidade dos fatores
+rely_icer_reou <- df1 %>%
+  select("ice1","ice5","ice8","ice9","ice15","ice23","ice26","ice29","ice31") %>%
+  omega(poly=TRUE)
+rely_icer_rebp <- df1 %>% 
+  select('ice4','ice11','ice14','ice16','ice21','ice24','ice27') %>%
+  omega(poly=TRUE)
+rely_icer_expr <- df1 %>% 
+  select('ice6','ice18','ice28','ice32') %>%
+  omega(poly=TRUE)
+rely_icer_perc <- df1 %>% 
+  select('ice2','ice7','ice10','ice12','ice19','ice22','ice33') %>%
+  omega(poly=TRUE)
+rely_icer_reap <- df1 %>% 
+  select('ice3','ice13','ice17','ice20','ice25','ice30','ice34') %>%
+  omega(poly=TRUE)
+rely_icer_icer <- df1 %>% select(ice1:ice34) %>%
+  omega(poly=TRUE)
+
+rely_icer_reou$omega.tot
+rely_icer_rebp$omega.tot
+rely_icer_expr$omega.tot
+rely_icer_perc$omega.tot
+rely_icer_reap$omega.tot
+
+rely_icer_icer$omega.tot
+
+rely_icer_reou$alpha
+rely_icer_rebp$alpha
+rely_icer_expr$alpha
+rely_icer_perc$alpha
+rely_icer_reap$alpha
+
+rely_icer_icer$alpha
+
+psych::alpha(df1[,c('reou','rebp','expr','perc','reap')])
+```
+
+
+## Cálculo das pontuações nos fatores
+```{r}
+# Cálculo das pontuações no Fator 1 (Regulação de Emoções em Outras Pessoas – 8 itens)
+df1$reou <- df1 %>% 
+            select("ice1","ice5","ice8",'ice9',"ice15","ice23","ice26","ice29","ice31") %>% 
+            rowMeans()
+
+# Cálculo das pontuações no Fator 2 (Regulação de Emoções de Baixa Potência – 7 itens)
+df1$rebp <- df1 %>% 
+            select('ice4','ice11','ice14','ice16','ice21','ice24','ice27') %>% 
+            rowMeans()
+
+# Cálculo das pontuações no Fator 3 (Expressividade Emocional – 4 itens)
+df1$expr <- df1 %>%
+            select('ice6','ice18','ice28','ice32') %>% 
+            rowMeans()
+
+# Cálculo das pontuações no Fator 4 (Percepção de Emoções – 7 itens)
+df1$perc <- df1 %>% 
+            select('ice2','ice7','ice10','ice12','ice19','ice22','ice33') %>% 
+            rowMeans()
+
+# Cálculo das pontuações no Fator 5 (Regulação de Emoções de Alta Potência – 8 itens)
+df1$reap <- df1 %>% 
+            select('ice3','ice13','ice17','ice20','ice25','ice30','ice34') %>% 
+            rowMeans()
+
+# Cálculo das pontuações no Fator Geral 
+df1$icer = df1 %>% 
+           select('reou','rebp','expr','perc','reap') %>% 
+           rowMeans()
+```
+
+
+# Estatísticas descritivas ICE-r: Tabela para a dissertação
+```{r}
+data.frame(Fatores = c("Regulação de Emoções em Outras Pessoas (reou)",
+                       "Regulação de Emoções de Baixa Potência (rebp)",
+                       "Expressividade Emocional (expr)",
+                       "Percepção de Emoções (perc)",
+                       "Regulação de Emoções de Alta Potência (reap)",
+                       "Competências Emocionais - Geral (icer)"),
+           "Média" = c(round(mean(df1$reou,na.rm = TRUE),digits = 2),
+                       round(mean(df1$rebp,na.rm = TRUE),digits = 2),
+                       round(mean(df1$expr,na.rm = TRUE),digits = 2),
+                       round(mean(df1$perc,na.rm = TRUE),digits = 2),
+                       round(mean(df1$reap,na.rm = TRUE),digits = 2),
+                       round(mean(df1$icer,na.rm = TRUE),digits = 2)),
+           DesvPad = c(round(sd(df1$reou,na.rm = TRUE),digits = 2),
+                       round(sd(df1$rebp,na.rm = TRUE),digits = 2),
+                       round(sd(df1$expr,na.rm = TRUE),digits = 2),
+                       round(sd(df1$perc,na.rm = TRUE),digits = 2),
+                       round(sd(df1$reap,na.rm = TRUE),digits = 2),
+                       round(sd(df1$icer,na.rm = TRUE),digits = 2)),
+           "Ômega de McDonald" = c(round(rely_icer_reou$omega.tot,digits = 2),
+                                   round(rely_icer_rebp$omega.tot,digits = 2),
+                                   round(rely_icer_expr$omega.tot,digits = 2),
+                                   round(rely_icer_perc$omega.tot,digits = 2),
+                                   round(rely_icer_reap$omega.tot,digits = 2),
+                                   round(rely_icer_icer$omega.tot,digits = 2)),
+           "Alfa de Cronbach" =  c(round(rely_icer_reou$alpha,digits = 2),
+                                   round(rely_icer_rebp$alpha,digits = 2),
+                                   round(rely_icer_expr$alpha,digits = 2),
+                                   round(rely_icer_perc$alpha,digits = 2),
+                                   round(rely_icer_reap$alpha,digits = 2),
+                                   round(rely_icer_icer$alpha,digits = 2))) %>% kable()
+
+hist(df1$icer)
+```
+# Análise do DFS-BR (Fidedignidade)
+
+```{r}
+# Challenge Skill Balance (CSB); Autotelic Experience (AE); Transformation of Time (TT); Lost of Self-Consciousness (LSC); Sense of Control (SC); Concentration on the Task at Hands (CTH); Unambiguous Feedback (UF); Clear Goals (CG); and Merging of Action and Awareness (MAA).
+
+names(df1)
+
+rely_dfs_csb <- df1 %>% select("f1","f10","f19","f28") %>% omega(poly=TRUE)
+rely_dfs_aex <- df1 %>% select("f9","f18","f27","f36") %>% omega(poly=TRUE)
+rely_dfs_tti <- df1 %>% select("f8","f17","f26","f35") %>% omega(poly=TRUE)
+rely_dfs_lsc <- df1 %>% select("f7","f16","f25","f34") %>% omega(poly=TRUE)
+rely_dfs_sct <- df1 %>% select("f6","f15","f24","f33") %>% omega(poly=TRUE)
+rely_dfs_cth <- df1 %>% select("f5","f14","f23","f32") %>% omega(poly=TRUE)
+rely_dfs_ufb <- df1 %>% select("f4","f13","f22","f31") %>% omega(poly=TRUE)
+rely_dfs_cgo <- df1 %>% select("f3","f12","f21","f30") %>% omega(poly=TRUE)
+rely_dfs_maa <- df1 %>% select("f2","f11","f20","f29") %>% omega(poly=TRUE)
+
+rely_dfs_csb$alpha
+rely_dfs_aex$alpha
+rely_dfs_tti$alpha
+rely_dfs_lsc$alpha
+rely_dfs_sct$alpha
+rely_dfs_cth$alpha
+rely_dfs_ufb$alpha
+rely_dfs_cgo$alpha
+rely_dfs_maa$alpha
+
+rely_dfs_csb$omega.tot
+rely_dfs_aex$omega.tot
+rely_dfs_tti$omega.tot
+rely_dfs_lsc$omega.tot
+rely_dfs_sct$omega.tot
+rely_dfs_cth$omega.tot
+rely_dfs_ufb$omega.tot
+rely_dfs_cgo$omega.tot
+rely_dfs_maa$omega.tot
+```
+
+# Calculo das pontuações no DFS-BR
+```{r}
+df1$dfs_csb <- df1 %>% select("f1","f10","f19","f28") %>% rowMeans()
+df1$dfs_aex <- df1 %>% select("f9","f18","f27","f36") %>% rowMeans()
+df1$dfs_tti <- df1 %>% select("f8","f17","f26","f35") %>% rowMeans()
+df1$dfs_lsc <- df1 %>% select("f7","f16","f25","f34") %>% rowMeans()
+df1$dfs_sct <- df1 %>% select("f6","f15","f24","f33") %>% rowMeans()
+df1$dfs_cth <- df1 %>% select("f5","f14","f23","f32") %>% rowMeans()
+df1$dfs_ufb <- df1 %>% select("f4","f13","f22","f31") %>% rowMeans()
+df1$dfs_cgo <- df1 %>% select("f3","f12","f21","f30") %>% rowMeans()
+df1$dfs_maa <- df1 %>% select("f2","f11","f20","f29") %>% rowMeans()
+```
+
+# Estatísticas descritivas da DFS-BR
+```{r}
+# Challenge Skill Balance (CSB); Autotelic Experience (AE); Transformation of Time (TT); Lost of Self-Consciousness (LSC); Sense of Control (SC); Concentration on the Task at Hands (CTH); Unambiguous Feedback (UF); Clear Goals (CG); and Merging of Action and Awareness (MAA).
+
+data.frame(Fatores = c("Challenge Skill Balance (CSB)",
+                       "Autotelic Experience (AEx)",
+                       "Transformation of Time (TTi)",
+                       "Lost of Self-Consciousness (LSC)",
+                       "Sense of Control (SC)",
+                       "Concentration on the Task at Hands (CTH)",
+                       "Unambiguous Feedback (UFb)",
+                       "Clear Goals (CG)",
+                       "Merging of Action and Awareness (MAA)"),
+           "Média" = c(round(mean(df1$dfs_csb,na.rm = TRUE),digits = 2),
+                       round(mean(df1$dfs_aex,na.rm = TRUE),digits = 2),
+                       round(mean(df1$dfs_tti,na.rm = TRUE),digits = 2),
+                       round(mean(df1$dfs_lsc,na.rm = TRUE),digits = 2),
+                       round(mean(df1$dfs_sct,na.rm = TRUE),digits = 2),
+                       round(mean(df1$dfs_cth,na.rm = TRUE),digits = 2),
+                       round(mean(df1$dfs_ufb,na.rm = TRUE),digits = 2),
+                       round(mean(df1$dfs_cgo,na.rm = TRUE),digits = 2),
+                       round(mean(df1$dfs_maa,na.rm = TRUE),digits = 2)),
+           DesvPad = c(round(sd(df1$dfs_csb,na.rm = TRUE),digits = 2),
+                       round(sd(df1$dfs_aex,na.rm = TRUE),digits = 2),
+                       round(sd(df1$dfs_tti,na.rm = TRUE),digits = 2),
+                       round(sd(df1$dfs_lsc,na.rm = TRUE),digits = 2),
+                       round(sd(df1$dfs_sct,na.rm = TRUE),digits = 2),
+                       round(sd(df1$dfs_cth,na.rm = TRUE),digits = 2),
+                       round(sd(df1$dfs_ufb,na.rm = TRUE),digits = 2),
+                       round(sd(df1$dfs_cgo,na.rm = TRUE),digits = 2),
+                       round(sd(df1$dfs_maa,na.rm = TRUE),digits = 2)),
+           "Ômega de McDonald" = c(round(rely_dfs_csb$omega.tot,digits = 2),
+                                   round(rely_dfs_aex$omega.tot,digits = 2),
+                                   round(rely_dfs_tti$omega.tot,digits = 2),
+                                   round(rely_dfs_lsc$omega.tot,digits = 2),
+                                   round(rely_dfs_sct$omega.tot,digits = 2),
+                                   round(rely_dfs_cth$omega.tot,digits = 2),
+                                   round(rely_dfs_ufb$omega.tot,digits = 2),
+                                   round(rely_dfs_cgo$omega.tot,digits = 2),
+                                   round(rely_dfs_maa$omega.tot,digits = 2)),
+           "Alfa de Cronbach" =  c(round(rely_dfs_csb$alpha,digits = 2),
+                                   round(rely_dfs_aex$alpha,digits = 2),
+                                   round(rely_dfs_tti$alpha,digits = 2),
+                                   round(rely_dfs_lsc$alpha,digits = 2),
+                                   round(rely_dfs_sct$alpha,digits = 2),
+                                   round(rely_dfs_cth$alpha,digits = 2),
+                                   round(rely_dfs_ufb$alpha,digits = 2),
+                                   round(rely_dfs_cgo$alpha,digits = 2),
+                                   round(rely_dfs_maa$alpha,digits = 2))) %>% kable()
+
+view(df1)
+```
+
+
+# Correlações entre os fatores do ICE-R e da Escala de Crenças de Eficácia dos Professores
+
+```{r}
+names(df1)
+cor_matrix <- corr.test(df1[,85:90],df1[,91:99])
+
+cor_matrix$stars %>% pander::pander() # não está apresentado a opção stars
+
+heatmap(cor_matrix$r)
+```
+
+# Análise fatorial
+```{r}
+
+df1 %>% select(85:89,91:99) %>% scree()
+df1 %>% select(85:89,91:99) %>% fa.parallel(cor = "poly")
+
+df1 %>% select(85:89,91:99) %>% fa(nfactors = 1, fm = "wls", rotate = "promax")
+```
+
+
+# Identificação de grupos de pessoas com alta e baixa IE
+```{r}
+hist(df1$icer)
+mean(df1$icer, na.rm = TRUE)
+sd(df1$icer, na.rm = TRUE)
+
+df1$ie_cod <- ifelse(df1$icer < mean(df1$icer, na.rm = TRUE) - sd(df1$icer, na.rm = TRUE),1,
+                     ifelse(df1$icer > mean(df1$icer, na.rm = TRUE) + sd(df1$icer, na.rm = TRUE),2,NA))
+
+count(df1,ie_cod)
+```
+
+# Análise de redes
+```{r}
+
+# heatmap
+cor.plot(cor_auto(df1[,c(85:89,91:99)]))
+
+# rede
+
+color <- c("blue","pink")
+groups <- list("Competências Emocionais" = 1:5,
+               Flow = 6:14)
+ie_flow_g <- qgraph(cor_auto(df1[,c(85:89,91:99)]),
+                    nodeNames = colnames(df1[c(85:89,91:99)]),
+                    groups = groups,
+                    color = c("cornflowerblue", "hotpink2"),
+                    posCol = "blue",
+                    labels = colnames(df1[c(85:89,91:99)]),
+                    layout = "spring",
+                    graph = "cor",
+                    sampleSize = 207,
+                    treshold = TRUE,
+                    minimum = 0.1,
+                    lambda.min.ratio = .002)
+
+ie_flow_g <- qgraph(cor_auto(df1[,c(85:89,91:99)]),
+                    nodeNames = colnames(df1[c(85:89,91:99)]),
+                    groups = groups,
+                    color = c("cornflowerblue", "hotpink2"),
+                    posCol = "blue",
+                    labels = colnames(df1[c(85:89,91:99)]),
+                    layout = "spring",
+                    graph = "glasso",
+                    sampleSize = 207,
+                    treshold = TRUE,
+                    minimum = 0.1,
+                    lambda.min.ratio = .002)
+
+ie_flow_g$plotOptions
+cor.plot(getWmat(ie_flow_g),numbers = TRUE)
+```
+

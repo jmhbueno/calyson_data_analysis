@@ -1,0 +1,1267 @@
+---
+title: "Introdução ao R"
+author: "Maurício Bueno"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    toc: yes
+    toc_float:
+      collapsed: no
+  word_document:
+    toc: yes
+editor_options:
+  chunk_output_type: console
+---
+
+```{r echo=FALSE}
+knitr::opts_chunk$set(echo=TRUE, warning=FALSE, message=FALSE)
+```
+
+# Introdução
+
+O R é uma **linguagem** e um **ambiente** de programação dentro do qual se pode fazer uma infinidade de operações estatísticas e de processamento de dados.
+Foi concebido para ser colaborativo e gratuito.
+Qualquer pessoa pode criar uma função, ou um conjunto de funções (pacote) e disponibilizar a outros usuários... **gratuitamente**!
+Visite o [site](https://cran.r-project.org/) do R e baixe o programa para instalação em seu computador.
+
+Em associação ao R, costuma-se usar o RStudio (baixe e instale clicando [aqui](https://www.rstudio.com/)), que facilita o uso do R ao disponibilizar um conjunto de quatro janelas que funcionam para as seguintes funções:
+
+1)  digitação de texto (superior, à esquerda),
+2)  display de resultados (console) (inferior, à esquerda),
+3)  visualizador de objetos (arquivos) gerados ao realizar um trabalho (superior, à direita),
+4)  informações gerais: arquivos, plotagens, pacotes instalados, help, e visualizador de imagens (inferior, à direita).
+
+Para a digitação dos comandos, deve-se abrir um novo **Script** ou um **RMarkdown**.
+
+Abre-se um novo **script** com a seguinte linha de comando: `File + New File + R Script`, cujo atalho é `CTRL+SHIFT+N`.
+
+Abre-se um novo **RMarkdown** com a seguinte linha de comando: `File + New File + R Markdown` Fazendo isso, abrirá uma aba no quadrante superior esquerdo.
+
+O **RMarkdown** aceita linhas de texto e linhas de código, mas as linhas de código devem ser escritas dentro de um **chunk**, que se abre com o comando `CTRL+ALT+i`.
+
+Já o **Script** é um grande **chunk** e não aceita linhas de texto.
+Por isso, preferimos usar o RMarkdown.
+
+Seja Script ou RMarkdown, você pode abrir quantas abas desejar.
+
+É possível rodar um comando no R de duas formas:
+
+-   Selecionando-o e clicando em "Run" na aba superior da área de digitação.
+
+-   Colocar o cursor em qualquer ponto da linha de comando e apertar `CTRL+ENTER`.
+
+## Instalação e ativação de pacotes
+
+Algumas funções não precisam da instalação de pacotes, pois já vêm com o R.
+São funções básicas (base), como operações matemáticas, plotagem, estatísticas básicas, entre outras.
+Outras funções estão em pacotes que precisam ser **instalados**, por meio do comando `install.packages()`, e **ativados**, por meio do comando `library()`.
+Então, vamos instalar alguns pacotes que iremos utilizar durante o curso.
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+# Instalação dos pacotes
+
+if(!require(readxl)) install.packages("readxl",repos = "http://cran.us.r-project.org")
+
+if(!require(tidyverse)) install.packages("tidyverse",repos = "http://cran.us.r-project.org")
+if(!require(knitr)) install.packages("knitr",repos = "http://cran.us.r-project.org")
+if(!require(kableExtra)) install.packages("kableExtra", repos = "http://cran.us.r-project.org")
+if(!require(expss)) install.packages("expss", repos = "http://cran.us.r-project.org")
+
+if(!require(tibble)) install.packages("tibble")
+# Ativacao dos pacotes ====
+
+library(readxl)
+library(tidyverse)
+library(knitr)
+library(expss)
+```
+
+Todo pacote do R tem uma documentação, com informações sobre as funções que o pacote contém.
+Uma forma de encontrar essa documentação é no site [rdocumentation.org](rdocumentation.org).
+
+As funções contidas dentro dos pacotes ser acessadas digitando-se um ponto de interrogação (?) antes do nome da função.
+Por exemplo, se quisermos a documentação da função **hist** da base do R, é só rodar o comando:
+
+```{r eval=FALSE, message=FALSE, warning=FALSE, include=FALSE}
+?hist()
+```
+
+A documentação aparecerá na aba **Help** do quadrante de visualizações de informações do RStudio.
+
+## Operadores básicos
+
+Existem também alguns operadores importantes no R, que você deve conhecer:\
+Um deles é a seta para a esquerda, formada com o sinal de *menor* e o traço de *menos*: `<-`.
+
+Atalho para esse operador: pressione simultaneamente as teclas `ALT` e `-`
+
+Esse operador indica que o resultado de uma operação será salva em um **objeto**.
+
+Por exemplo: o comando abaixo diz "*faça a soma de 3 com 4 e guarde o resultado num objeto chamado **soma**"*.
+Esse objeto (soma) aparecerá no environment (quadrante superior direito do RStudio).
+
+```{r}
+soma <- 3 + 4 
+```
+
+O comando "\#" permite que você faça comentários, sem que o R o entenda como comando.
+Por exemplo:
+
+```{r}
+soma <- 3 + 4   # Esse comando calcula a soma de 3 + 4 e salva no objeto "soma"
+```
+
+O texto que aparece após a #, em outra cor (verde, azul, etc.), é ignorado pelo R.
+Esses são os comandos mais básicos.
+Há muitos outros atalhos...
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+atalhos <- data.frame(atalho  =c("CTRL + ENTER",
+                                 "CTRL + SHIFT + C",
+                                 "CTRL + 1",
+                                 "CTRL + 2",
+                                 "SETA PARA CIMA (no console)",
+                                 "CTRL + ALT + SETA PARA ESQUERDA OU DIREITA",
+                                 "CTRL + SHIFT + ENTER",
+                                 "CTRL + S",
+                                 "CTRL + L",
+                                 "ALT + SHIFT + K"),
+                      "o que faz"=c("Executa a linha selecionada",
+                                    "Comenta e descomenta a linha",
+                                    "Passa o cursor para o script",
+                                    "Passa o cursor para o console",
+                                    "acessa o histórico de comandos anteriores",
+                                    "Navega entre as abas de script abertas",
+                                    "Executa o Script inteiro",
+                                    "Salva o Script",
+                                    "Limpa o console",
+                                    "Ver a lista de atalhos"
+                                    ))
+knitr::kable(atalhos, format = "markdown")
+```
+
+## Definir diretório de trabalho
+
+Para facilitar o trabalho com salvamento e recuperação de arquivos, é recomendável que se defina um diretório de trabalho, onde todos os arquivos referentes à análise de dados serão salvos.
+
+```{r}
+# para verificar o diretório atual, execute o comando: 
+getwd()
+
+# OBS.: se for necessário, navegue até o local desejado utilizando a aba "files"
+
+# defina sua pasta de trabalho utilizando a função: 
+setwd("C:/Users/jmhbu/OneDrive/Documentos/R/R_basico/Intro_R")
+```
+
+## Principais operadores
+
+O R pode ser usado como calculadora...
+
+A tabela a seguir apresenta os principais operadores que usamos nos códigos em R.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+table_operadores <- data.frame(Operador = c("+","-","*","/",":","^","sqrt","==",
+                                            ">","<","<=",">=","!","&","|"),
+                               Descrição = c("Adição",
+                                             "Subtração",
+                                             "Multiplicação",
+                                             "Divisão",
+                                             "Sequência",
+                                             "Exponencial",
+                                             "Raiz",
+                                             "Igualdade",
+                                             "Maior que",
+                                             "Menor que",
+                                             "Menor ou igual",
+                                             "Maior ou igual",
+                                             "Não",
+                                             "E",
+                                             "Ou"))
+knitr::kable(table_operadores, format = "markdown")
+```
+
+Exercitando...
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+
+# operações matemáticas
+
+3+4
+5-2
+4*2
+9/3
+sqrt(9)
+2^3
+
+1:10
+10:1
+
+#3 = 3
+3 == 3
+3 > 2
+3 < 2
+3 >= 2
+3 >= 3
+3 <= 2:5
+3 + 4 >= 14/2
+
+!3 == 5
+
+1 < 2 & 2 < 3
+
+1 == 2 | 2 > 3
+
+```
+
+## Operações lógicas
+
+Algumas palavras são reservadas no R para operações lógicas.
+As principais são TRUE, FALSE e NA.
+
+```{r echo=FALSE, eval=TRUE}
+
+op_logicos <- data.frame("Operadores lógicos" = c("NA","NaN","Inf","NULL","TRUE","FALSE"),
+                         Significados = c("Not available - dado faltante/indiponível",
+                                          "Not a number - indefinições matemáticas como 0/0, log(-1)",
+                                          "Infinito - número muito grande, como 1/0 e 10^310",
+                                          "Representa ausência de objeto",
+                                          "Condição é verdadeira",
+                                          "Condição é falsa"))
+knitr::kable(op_logicos, format = "markdown")
+```
+
+## Criando objetos
+
+Os objetos que podem ser criados no R são:
+
+-   listas
+
+-   vetores
+
+-   matrizes
+
+-   array
+
+-   dataframes
+
+Vamos definir os que mais usamos em nossas análises.
+
+**Lista**: é uma coleção de informações.
+
+```{r}
+minha_lista <- list("s01","masculino",23,"ensino médio")
+class(minha_lista)
+
+# minha_lista é um objeto do tipo lista, que guarda informações de diferentes tipos: id, sexo, idade, escolaridade
+# essas informações foram salvas num objeto do tipo lista, que pode ser visto no environment
+# informações não-numéricas aparecem entre "aspas" para o R reconhecer cada elemento dentro do objeto
+# as informações dessa lista poderiam ser de um sujeito num df, cada informação é de uma natureza
+# o comando "c", significa "concatenar". É usado para inserir mais de uma informação.
+```
+
+**Vetor**: é uma coleção de informações ou elementos **da mesma natureza**.
+Por exemplo, as variáveis que costumamos colocar nas colunas dos nossos bancos de dados são **vetores**.
+
+```{r}
+meu_vetor <- c("masculino","feminino","feminino","masculino","feminino")
+is.list(meu_vetor)
+is.vector(meu_vetor)
+is.data.frame(meu_vetor)
+
+# meu_vetor é um objeto do tipo vetor porque contem informações da mesma natureza. Poderiam ser informações sobre o sexo dos sujeitos em um  banco de dados
+
+vetor1 <- c(1, 5, 3, -10)
+vetor2 <- c("a", "b", "c")
+
+class(vetor1)
+class(vetor2)
+
+# Se tentarmos misturar duas classes, o R vai apresentar um comportamento conhecido como coerção. Ele vai impor uma das classes aos objetos. Por exemplo:
+
+vetor <- c(1, 2, "a")
+
+vetor
+class(vetor)
+```
+
+**Dataframe**: é um conjunto de vetores.
+Nossos bancos de dados, no R, recebem o nome de dataframes.
+
+```{r}
+# criar vetor sexo, em que 1 é masculino e 2 é feminino.
+sexo <- c(1,2,1,1,2)
+is.vector(sexo)
+
+# pode-se criar um vetor semelhante, mas com letras
+# quando uma informação textual for inserida num objeto, ela tem que ir entre aspas.
+sexo_cod <- c("m","f","m","m","f") # vetor com informações sobre sexo
+
+# uma alternativa a isso é transformar a variável sexo em uma variável fator
+
+sexo <- factor(sexo, levels = c(1,2), labels = c("masculino", "feminino"))
+
+
+idade <- c(25,32,78,12,NA) # vetor com informações de idade
+
+# A partir dos dois vetores anteriores é possível criar um dataframe (conjunto de vetores)
+df <- data.frame(sexo_cod,idade)
+
+# acrescentando a variável escolaridade
+escolaridade <- c("superior","medio","fundamental","fundamental","medio")
+
+cbind(df,escolaridade) # cbind() é uma função da base que anexa colunas.
+df <- cbind(df,escolaridade) 
+
+# acrescentando a variável id
+id <- 1:5
+df <- cbind(id,df)
+
+# Se quiser inserir um "s" antes do número de cada sujeito, podemos usar a função paste(), que concatena duas partes da informação que constar em uma coluna. Essa função diz: concatene um s com valores de 1 a 5, separados por nada.
+
+paste("s",1:5,sep="_")
+id <- paste("s",1:5,sep="")
+
+# uma forma de salvar os resultados em uma nova variável diretamente no banco de dados é usando a função $ (cifrão). Quando digitamos o $ em seguida ao nome do objeto (dataframe), o R abre, automaticamente, abre uma janela de opções com as variáveis que existem no dataframe. Ao selecionar "id", por exemplo, os novos dados serão salvos SOBRE os dados existentes. Caso se queira CRIAR uma nova variável, basta digitar o nome de uma variável inexistente no dataframe.
+
+df$id <- paste("s",1:5,sep="")
+
+# se quiser inserir um novo sujeito no dataframe
+
+suj6 <- list(id="s6",sexo_cod="m",idade=34,escolaridade="superior")
+suj6 <- list("s6","m",34,"superior")
+
+
+rbind(df,suj6)
+df <- rbind(df,suj6)
+glimpse(df)
+
+# inserir a variável renda
+# seq(from,to,by,lenth)
+
+df$renda <- seq(1000, by=500,length=6)
+
+# ou
+#renda <- seq(1000, by=500,length=6)
+#df <- cbind(df,renda)
+
+# inserir uma variável "bonus", referente a um abono de 500 reais a cada sujeito.
+# usamos a função rep(), que é semelhante à variável seq(), sem o argumento "by", porque a informação é sempre a mesma
+df$bonus <- rep(500,6)
+# ou
+#bonus <- rep(500,6)
+#df <- cbind(df,bonus)
+
+# calcular renda_total, que é a soma das variáveis renda e bonus
+df$renda_total <- df$renda + df$bonus
+
+# inserir a variável "Estado Civil"
+df$"Estado Civil" <- c("casado/a","solteiro/a","viúvo/a","solteiro/a","casado/a","casado/a")
+
+```
+
+# Funções para visualização de dados
+
+```{r}
+df
+names(df)
+str(df)
+glimpse(df)
+head(df)
+ncol(df)
+nrow(df)
+view(df)
+unique(df$"Estado Civil")
+unique(df$idade)
+df_copia <- df
+df <- df_copia
+```
+
+# Funções para manipulação de dados
+
+Muitas vezes, precisamos manipular os dados de um dataframe, seja para renomear colunas, selecionar linhas ou colunas, adicionar variáveis ou sujeitos, entre outras.
+Vejamos algumas delas.
+
+## Alteração do nome de variáveis
+
+```{r}
+# Alterar o nome da variável "sexo_cod"
+df <- rename(df,sexo = sexo_cod)
+
+# Alterar o nome da variável "Estado Civil"
+df <- rename(df,estado_civil = "Estado Civil")
+
+# Para se alterar o nome de muitas variáveis, por exemplo, substituindo os espaços 
+# em branco (" ") por underline ("_"), pode-se usar a função gsub, da base do R.
+
+names(df) <- gsub(" ","_",names(df))
+?gsub()
+# essa função diz: vá nos nomes das variáveis de df e sibstitua os espaços em branco (" ") por underline ("_") 
+```
+
+## Selecionar linhas e colunas
+
+```{r}
+# Selecionar linhas e colunas: dataframe[linhas,colunas]
+
+df[1:3, ] # seleção das três primeiras linhas
+df[ ,1:3] # seleção das três primeiras colunas 
+df[1:3,1:3] # seleção das três primeiras linhas e das três primeiras colunas
+
+# Se que quisermos selecionar as linhas 1, 3 e 6, como fazemos?
+df[c(1,3,5), ]
+
+# se quisermos selecionar as colunas id, idade e renda_total
+df[ ,c(1,3,7)]
+df[ ,c("id","idade","renda_total")]
+df[ ,c("renda_total","idade","id")]
+```
+
+## Filtrar linhas inteiras
+
+```{r}
+# Selecionar somente as linhas dos participantes do sexo masculino
+df[df$sexo == "m",  ]
+
+# Selecionar somente as linhas dos participantes do sexo masculino com renda_total maior ou igual a 2500 reais.
+df[df$sexo == "m" & df$renda_total >= 2500, ]
+```
+
+## Alterar o conteúdo dentro de uma variável
+
+```{r}
+# Alterar o conteúdo dentro de uma variável
+
+df$sexo[df$sexo == "f"] <- 0
+df$sexo[df$sexo == "m"] <- 1
+```
+
+## Alterar o formato de variáveis
+
+```{r}
+# visualisar que a variável sexo está como character, mas também foi possível perceber que outras variáveis também não estão no formato ideal. Vamos acertar todas elas.
+glimpse(df)
+str(df)
+
+# mudar variável sexo para factor (note que está como caractere)
+df$sexo <- as.numeric(df$sexo)
+df$sexo <- as.factor(df$sexo) # factor é uma variável nominal
+# df$sexo <- c("m","f","m","m","f","m")
+
+# df$idade <- as.numeric(df$idade)
+df$escolaridade <- as.factor(df$escolaridade)
+```
+
+## Atribuir níveis às variáveis de fator
+
+```{r}
+# atribuir levels aos valores 0 e 1 da variável sexo
+levels(df$sexo) <- c("feminino","masculino")
+levels(df$escolaridade) <- c("fundamental","médio","superior")
+```
+
+## Alterar a ordem das variáveis no dataframe
+
+```{r}
+# Alterar a ordem das variáveis no banco de dados
+df <- df[ ,c("id","sexo","idade","escolaridade","estado_civil",
+             "renda","bonus","renda_total")]
+```
+
+## Combinar dataframes
+
+```{r include=FALSE}
+# importar planilha para o objetivo variables
+variables <- read_xlsx("Variables.xlsx")
+```
+
+Nesse caso, temos o dataframe `variables`, com a informação de cinco variáveis dos mesmos sujeitos que constam no dataframe `df`.
+Então, gostaríamos de juntar esses dois dataframes.
+Para isso podemos usar duas funções.
+
+```{r}
+# Juntar a planilha importada no dataframe df
+df <- cbind(df,variables)
+```
+
+## Atribuição de labels
+
+```{r}
+# Atribuir labels às variáveis v1 a v5
+# vamos supor que essa variávels correspondessem às seguintes perguntas:
+# v1 = Você costuma se atrasar para as aulas?
+# v2 = Quanto você confia na sua capacidade de aprender?
+# v3 = Quão bem você se relaciona com outras pessoas na sua escola?
+# v4 = Quanto você gosta de sua escola?
+# v5 = Quanto você procrastina para estudar?
+# para isso vamos usar a função apply_labels do pacote expss
+
+df  <- apply_labels(df,
+       v1 = "Você costuma se atrasar para as aulas?",
+       v2 = "Quanto você confia na sua capacidade de aprender?",
+       v3 = 'Quão bem você se relaciona com outras pessoas na sua escola?',
+       v4 = 'Quanto você gosta de sua escola?',
+       v5 = 'Quanto você procrastina para estudar?')
+
+str(df)
+glimpse(df)
+#view(df)
+```
+
+## Lidando com dados ausentes
+
+A função `na.omit` deleta as informações de uma linha inteira que contenha ao menos uma informação ausente.\
+
+A função `na.exclude` faz quase a mesma coisa, mas apenas omite a linha e acaba reportando alguns resultados, como resíduos, por exemplo, em análises de regressão.
+Além disso, também preserva o número de linhas do dataframe.
+Isso é importante em certas ocasiões que se deseja manter constante o número de linhas de um dataframe para coincidir com outro dataframe, por exemplo.
+
+```{r}
+na.omit(df)
+na.exclude(df)
+```
+
+Outra função bastante empregada é a `na.rm`, que normalmente é usada dentro de funções estatísticas para sinalizar que os valores NA devem ser ignorados.
+
+```{r}
+# mean(df$idade)    # essa função acaba não rodando, porque entre os dados de idade existe um NA
+mean(df$idade,na.rm = TRUE) # dessa forma, conseguimos rodar a análise.
+```
+
+# Função `ifelse()`
+
+A função `ifelse()` é bastante útil para a manipulação de dados.
+Ela deve ser escrita da seguinte forma: `ifelse("condição", "se sim", "se não")` Traduzindo: observe a condição... se ela ocorrer, faça isso... se ela não ocorrer, faça aquilo.
+Exemplos:
+
+```{r}
+# se quisermos classificar a renda em dois grupos: menor igual a R$2000 e maior que R$2000, podemos usar a função ifelse()
+# ifelse(condição,se sim, se não)
+# traduzindo....
+# observe se, na variável renda, o valor é menor ou igual a 2000
+# se for, então atribua 1
+# se não for, então atribua 2.
+
+ifelse(df$renda <= 2000,1,2)
+
+# Se quisermos salvar esses dados como uma coluna do df...
+df$renda_cod <- ifelse(df$renda <= 2000,1,2)
+
+# se quisermos criar uma coluna atribuindo 1 para homens e 0 para os demais.
+ifelse(df$sexo == "masculino",1,0)
+
+# se quisermos identificar homens com escolaridade fundamental
+ifelse(df$sexo == "masculino" & df$escolaridade == "fundamental",1,0)
+
+# se quisermos identificar homens com escolaridade fundamental OU pessoa casadas.
+ifelse(df$sexo == "masculino" & df$escolaridade == "fundamental" | df$estado_civil == "casado/a",1,0)
+
+# se quisermos criar uma nova variável atribuindo 1 para solteiro, 2 para casado e 3 para viúvo... tínhamos visto o formato
+
+#df$escolaridade[df$escolaridade == "fundamental"] <- 1
+#df$escolaridade[df$escolaridade == "médio"] <- 2
+#df$escolaridade[df$escolaridade == "superior"] <- 3
+
+df$escola_cod <- ifelse(df$escolaridade == "fundamental",1,
+                        ifelse(df$escolaridade == "médio",2,3))
+
+ifelse(df$v1 == 1,5,
+       ifelse(df$v1 == 2,4,
+              ifelse(df$v1 == 3,3,
+                     ifelse(df$v1 == 4,2,1))))
+
+# Também é possível recodificar variáveis de jeito mais fácil, usando uma função do pacote expss.
+# Note que há questões no sentido de uma boa adaptação aos estudos e frases no sentido contrário. Nesses casos, não podemos somar os itens diretamente porque um valor 5 em v1 significa má adaptação, enquanto o mesmo valor 5  significa boa adaptação em v2. Então, não podemos somar coisas que têm significados diferentes.
+# Para lidar com isso, geralmente, fazemos a inversão de itens que estão na direção contrária do que queremos avaliar. Por exemplo, se queremos avaliar "adaptação escolar", então invertemos os itens v1 e v5, que estão na direção contrária.
+# Inverter significa transformar 1 em 5, 2 em 4, 3 em 3, 4 em 2 e 5 em 1. 
+# Para isso, usamos a função recode() do expss.
+
+recode(df[ ,c("v1","v2","v3","v4","v5")]) <- c(1~5,2~4,3~3,4~2,5~1)
+recode(df[ ,c("v1","v5")]) <- c(1~5,2~4,3~3,4~2,5~1)
+```
+
+# Importar e exportar arquivos de/para outros formatos
+
+Há vários pacotes para importação de arquivos elaborados em outros programas, como o Excel e o SPSS, por exemplo, que são muito comuns em pesquisas em Psicologia.
+De forma semelhante, às vezes, analisamos os dados no R/RStudio, salvamos a planilha em um dataframe, mas gostaríamos de exportar essa planilha para outros formatos, para serem lidos por outros programas, por exemplo.
+A seguir, veremos como fazer isso, começando pela **exportação de arquivos**.
+## Exportação de arquivos \### Usando função da base
+
+```{r}
+
+saveRDS(df,"df.rds") # formato reconhecido pelo R
+```
+
+### Usando funções do pacote utils
+
+```{r}
+
+# write.csv(df1,               # dataframe a ser exportado
+#           "df1.csv",         # nome a ser dado ao dataframe exportado
+#           sep = ",",         # caractere que separa as colunas
+#           na = "NA",         # como codificar dados faltantes
+#           dec = ".",         # que caractere usar para separar casas decimais
+#           col.names = TRUE)  # informar se Há (TRUE) ou não (FALSE) nome das colunas no dataframe
+
+# write.csv2(df1,              # semelhante ao comando anterior, mas assumindo sep = ";" e dec = ","
+#           "df1.csv",         
+#           sep = ";",                
+#           na = "NA",       
+#           dec = ",",       
+#           col.names = TRUE)
+
+### OBS.: Essas funções acima podem ser resumidas para...
+write.csv(df, "df.csv")
+write.csv2(df, "df.csv")
+```
+
+### Usando funções do pacote readr
+
+```{r}
+# Carregar os pacotes readr
+if(!require(readr)) install.packages("readr")
+library(readr)
+
+write_csv(
+  df,
+  "df.csv",
+  na = "NA",
+  col_names = TRUE)
+
+write_csv2(
+  df,
+  "df.csv",
+  na = "NA",
+  col_names = TRUE)
+
+write_excel_csv(
+  df,
+  "df.csv",
+  na = "NA",
+  col_names = TRUE,
+  delim = ",")
+
+write_excel_csv2(
+  df,
+  "df.csv",
+  na = "NA",
+  col_names = TRUE,
+  delim = ";")
+```
+
+## Importação de arquivos
+
+### Importando arquivos em `.csv` com o pacote `utils`
+
+```{r}
+# Importando arquivos em .csv
+
+## Usando o pacote utils
+
+#### read.csv(df.csv, header = TRUE, sep = ",", dec = ".", encoding = "UTF-8")
+read.csv2("df.csv",             # nome do arquivo a ser importado (OBS. deve estar no diretório de trabalho)
+          header = TRUE,        # TRUE, para arquivos com nomes das colunas
+          sep = ";",            # caractere separador das colunas
+          dec = ",",            # caractere separador de casas decimais.
+          encoding = "UTF-8")   # usar codificação UTF-8 para que os acentos, etc. venham de forma correta.
+```
+
+### Importando arquivos em `.csv` com o pacote `readr`
+
+```{r}
+## Usando o pacote readr
+
+read_csv2("df.csv", col_names = TRUE, na = "NA",skip_empty_rows = TRUE)
+```
+
+### Importando arquivos em `.xls` e `.xlsx` (Excel) com o pacote `readxl`
+
+```{r}
+## Usando o pacote readxl para importar arquivos em excel
+library(readxl)
+
+read_excel("df.xlsx", col_names = TRUE)
+```
+
+### Importando arquivos em `.sav` (SPSS) com o pacote `haven`
+
+```{r}
+## Usando o pacote haven para importar arquivos do SPSS
+
+if(!require(haven)) install.packages("haven")
+library(haven)
+
+read_sav("df.sav")
+```
+
+# Pacote `tidyverse`
+
+O `tidyverse` é uma família de pacotes que compartilham a mesma filosofia e linguagem de programação.
+Fazem parte dessa família pacotes como o `dplyr`, o `tidyr`, o `readr` e o `ggplot2`, entre outros.
+O `dplyr` e o `tidyr` são pacotes com funções para a **manipulação de dados**, O `ggplot2` é um pacote poderoso para fazer **gráficos** e o `readr` permite a importação e exportação de dados.
+
+Uma função básica do Tidyverse é a **função pipe** `%>%`, que se obtém pressionando as teclas `CTRL+SHIFT+M`.
+Essa função pode ser interpretada como "então" e permite escrever códigos na sequência em que ocorrem.
+Por exemplo:
+
+```{r}
+# para criar e inserir uma variável no banco de dados, ao invés de usar o sistema tradicional, podemos usar a linguagem tidy.
+
+library(tidyverse)
+
+df %>% group_by(sexo) %>% summarise(média = mean(idade))
+df %>% group_by(sexo) %>% summarise(média = mean(idade, na.rm = TRUE))
+str(df)
+```
+
+Na sintaxe acima, usamos algumas funções que serão discutidas a seguir, mas é possível ver como escrevemos os códigos usando o pipe.
+Em português, esse código ficaria assim: pegue o dataframe df, **então** agrupe pela variável sexo, **então** calcule as médias de idade.
+Esse comando ajuda bastante a escrever códigos mais complexos.
+
+# Comando `%in%`
+
+```{r}
+which(seq(1,by=1,length=10) %in% seq(4,by=1,length=9))
+```
+
+Usando %in% para adicionar uma nova coluna a um dataframe em R
+
+```{r}
+# Creating a dataframe:
+# dataf2 <- data.frame(Type  = c("Fruit","Fruit","Fruit","Fruit","Fruit",
+#                                "Vegetable", "Vegetable", "Vegetable", "Vegetable", "Fruit"),
+#                      Name  = c("Red Apple","Strawberries","Orange","Watermelon","Papaya",
+#                                "Carrot","Tomato","Chili","Cucumber", "Green Apple"),
+#                      Color = c(NA, "Red", "Orange", "Red", "Green",
+#                                "Orange", "Red", "Red", "Green", "Green"))
+# 
+# 
+# # Adding a New Column:
+# dataf2 <- within(dataf2, {
+#   Red_Fruit = "No"
+#   Red_Fruit[Type %in% c("Fruit")] = "No"
+#   Red_Fruit[Type %in% "Vegetable"] = "No"
+#   Red_Fruit[Name %in% c("Red Apple", "Strawberries", "Watermelon", "Chili", "Tomato")] = "Yes"
+# })
+```
+
+# Pacote `dplyr`
+
+Esse pacote da família `tidyverse` apresenta um conjunto de funções que permite selecionar variáveis, filtrar observações, selecionar linhas, organizar apresentação de resultados, criar e/ou modificar variáveis, agrupar variáveis, entre outras.
+Esses comandos são conhecidos como os **verbos do dplyr**.
+
+```{r echo=FALSE}
+tidyverse_table <- data.frame("Funções tidyverse(dplyer)"=c(
+                              "select()",
+                              "filter()",
+                              "slice()",
+                              "arrange()",
+                              "mutate()",
+                              "group_by()"),
+                              "O que faz"=c("seleciona colunas do dataframe",
+                                            "filtra linhas por categoria de variável",
+                                            "filtra linhas inteiras do dataframe",
+                                            "reordena as linhas do dataframe",
+                                            "cria novas colunas no dataframe",
+                                            "realiza os comandos que vierem a seguir pelas variáveis selecionadas"))
+library(knitr)
+
+tidyverse_table %>% kable(format = "markdown")
+```
+
+Vamos testar uma por uma, com o nosso dataframe df, começando pela função `select()`, que seleciona **colunas** do dataframe.
+
+## select()
+
+```{r}
+# SELECT
+
+names(df) # visualisar número das colunas
+df %>% names() %>% as.data.frame()
+# pegar df e selecionar as colunas 1,2,4,5 e de 9 a 13
+
+df[ ,c("id","sexo","escolaridade","estado_civil","v1","v2","v3","v4","v5")]
+
+df %>% select(1,2,4,5,9:13) # o comando pipe diz o que é pra fazer com o dataframe 
+df %>% select(id, sexo, v1,v2,v3,v4,v5)
+
+# podemos salvar esse novo dataframe com um novo nome. Ao rodar o código abaixo, será criado um objeto df1 no Global Environment
+
+df1 <- df %>% select(1,2,4,5,9:13)
+
+# usar select para deletar uma coluna 
+
+df1 %>% select(-4) # deletar a coluna estado_civil
+
+# usar select para reordenar as colunas
+
+df1 %>% select(5:9,1,3,2,4)  
+
+## OU
+
+df1 %>% select(5:9,everything())
+
+# Outras possibilidades
+
+df %>% select(contains("sum"))
+
+df %>% select(ends_with("dade"))
+
+df %>% select(starts_with("v"))
+
+# vamos aproveitar e deletar as duas últimas colunas do df
+
+names(df)     # ver o nome e o número das colunas, para identificar que as duas últimas                  colunas são a 14 e a 15.
+
+df %>% select(-14,-15)
+df %>% select(-c(14,15))
+df %>% select(-c(renda_cod,escola_cod))
+
+df <- df %>% select(-c(renda_cod,escola_cod))
+
+# se quiser selecionar um grupo de variáveis que começam com as mesmas letras
+
+df %>% select(starts_with("v"))
+df %>% select(starts_with(c("v","sum","mean")))
+
+# ou selecionar variáveis que terminam com as mesmas letras (ou números)
+
+df %>% select(ends_with("dade"))
+
+# seleção de variáveis usando operadores booleanos
+
+df %>% select(!ends_with("dade"))
+
+df %>% select(where(is.factor))
+
+df %>% select(where(is.numeric) & starts_with(c("s")))
+df %>% select(where(is.numeric) & starts_with(c("s","v")))
+
+```
+
+## filter()
+
+Se a função `select()` permite a seleção de colunas de um dataframe, a função `filter()` permite a seleção de **linhas**.
+
+```{r}
+## se quisermos filtrar somente os participantes do sexo masculino
+
+df %>% filter(sexo == "masculino")
+
+## pode-se acrescentar outras variáveis para filtrar
+## por exemplo, filtrar participantes do sexo masculino, com nivel fundamental de escolaridade
+
+df %>% filter(sexo == "masculino",escolaridade == "fundamental")
+
+## ou ainda participantes do sexo masculino, do esnisno fundamental e solteiro/a
+df %>% filter(sexo == "masculino",escolaridade == "fundamental",estado_civil == "solteiro/a")
+
+## se quisermos retirar do banco todos os participantes com ensino fundamental.
+## observe que o ponto de exclamação no código é uma espécie de "tudo, menos..."
+df %>% filter(!escolaridade == "fundamental")
+df %>% filter(!escolaridade == "fundamental",renda>=3000)
+
+## ou, se quiser selecionar participantes com renda_total superior ou igual a R$ 2000,00.
+df %>% filter(renda_total >= 2000)
+
+## OBS.: lembrando que se quisermos salvar a filtragem em um novo dataframe...
+df_renda_maior2000 <- df %>% filter(renda_total >= 2000)
+```
+
+As funções `select()` e `filter()` são muito úteis para limpeza do banco de dados.
+Por exemplo, quando baixamos um banco de dados do google formulário, ele vem com as informações de data e hora que o participante respondeu o questionário, com as respoostas ao TCLE, que normalmente não iremos utilizar nas análises.
+Então, podemos deletá-las usando a função `select()`.
+Outra aplicação muito comum é para criar um *subset* do arquivo base, que contenha somente os itens de um dos instrumentos, para análise de suas propriedades psicométrias.\
+
+De forma semelhante, podemos usar a função `filter()` para eliminar sujeitos que não atendem aos critérios de inclusão da pesquisa.
+Ou selecionar um *subset* do banco de dados, que contenha os sujeitos de interesse.
+
+## slice()
+
+Uma opção para selecionar casos com base na linha inteira é a função `slice()`.
+
+```{r}
+# selecionar linhas inteiras
+df %>% slice(1:3)
+df %>% slice(1,4,6)
+
+# selecionar por exclusão
+df %>% slice(-1)
+df %>% slice(-c(1,6))
+df %>% slice(-1,-6)
+
+# sortear uma proporção do banco de dados
+df %>% slice_sample(prop = .35)
+df %>% slice_sample(n=3)
+```
+
+## arrange()
+
+Por sua vez, a função `arrange()`, ordena os dados por um critério.
+
+```{r}
+# Ordenar df por idade
+df %>% arrange(idade)
+
+# Ordenar df por ordem decrescente de renda_total
+df %>% arrange(desc(renda_total))
+
+# É possível inserir mais de uma variável, por exemplo, sexo e renda_total
+df %>% arrange(sexo,desc(renda_total))
+```
+
+A função `mutate()` permite criar variáveis dentro de um dataframe.
+É muito útil para calcular pontuações a partir de itens, por exemplo, ou para fazer transformações de outras variáveis.\
+
+## mutate
+
+```{r}
+# calcular as pontuações das pessoas nos itens de v1 a v5.
+df %>% mutate(escore = v1+v2+v3+v4+v5)
+df %>% mutate(escore = (v1+v2+v3+v4+v5)/5)
+# se quisermos salvar a nova variável, então o código seria...
+df <- df %>% mutate(escore = v1+v2+v3+v4+v5)
+
+# remover label da variável escore
+escore <- unvr(df$escore)
+df$escore <- escore
+glimpse(df)
+```
+
+## group_by
+
+A função `group_by` agrupa os resultados de uma operação e, geralmente, é usada juntamente com alguma outra operação, como por exemplo, a função `summarise()`.
+
+```{r}
+
+# calcular as médias da variável escore, por sexo (grupo_by(sexo))
+df %>% group_by(sexo) %>% count(escolaridade)
+df %>% group_by(sexo) %>% summarise(mean(escore))
+df %>% group_by(sexo,escolaridade) %>% summarise(mean(escore))
+```
+
+## rename
+
+Às vezes, é necessário renomear uma ou mais variáveis de um dataframe.
+Para isso, podemos usar a função `rename()` do dyplr.
+
+```{r}
+df %>% rename(item1 = v1,
+              item2 = v2,
+              item3 = v3,
+              item4 = v4,
+              item5 = v5)
+```
+
+## Combinação de variáveis (left_join, right_join, inner_join, full_join, semi_join, anti_join)
+
+Num primeiro caso, vamos combinar dois data frames com o mesmo número de linhas e colunas.
+Para isso, é necessário ter pelo menos uma variável em comum nos dois bancos de dados.
+Esssa variável será usada pela função para combinar os dois dataframes.
+
+```{r}
+## criando df2 para combinar com df
+df2 <- 
+data.frame(id = c("s1","s2","s3","s4","s5","s6"),
+           Trabalho = c(1,1,0,0,1,1),
+           Filhos = c(0,1,1,0,1,1),
+           renda_total = c(1500,2000,2500,3000,3500,4000))
+
+left_join(df,df2) # Para salvar o novo dataframe, teríamos que apontar a função para um novo objeto.
+```
+
+Note que a função reconheceu duas variáveis em comum (id e renda_total) e sinalizou isso dizendo `Joining, by = c("id", "renda_total")` no início dos resultados.
+Mas, muitas vezes a situação é mais complexa.
+Podemos ter um segundo dataframe com informações adicionais de apenas **ALGUNS** participantes que estão no primeiro dataframe.
+Além disso, podemos ter participantes adicionais, que não estão no primeiro dataframe.
+
+```{r}
+# Não temos mais os participantes s2 e s4 e temos outros participantes (s7 a s10), que não estão em df
+df2 <- 
+data.frame(id = c("s1","s3","s5","s6","s7","s8","s9","s10"),
+           Trabalho = c(1,0,1,1,1,0,1,0),
+           Filhos = c(0,1,1,1,0,0,1,1))
+
+left_join(df,df2)
+```
+
+Observe que somente os **DADOS EM COMUM** foram para o novo dataframe.
+Ou seja, participantes que não constavam em df não foram acrescentados e informações não disponíveis em df2 sobre participantes de df foram registradas como `NA`.
+A função chama-se `left_join` exatamente por tomar o dataframe à esquerda (o primeiro) como referência para fazer as alterações.\
+
+Se quisermos usar o segundo dataframe como referência (df2), podemos usar a função `right_join`
+
+```{r}
+right_join(df,df2)
+```
+
+Caso se queira apenas as informações que constem **em ambos os dataframes**, pode-se usar a função `inner_join`.
+
+```{r}
+inner_join(df,df2)
+```
+
+Caso se queira a **JUNÇÃO COMPLETA DOS DOIS DATAFRAMES**, pode-se usar a função `full_join`.
+
+```{r}
+full_join(df,df2)
+```
+
+Caso a variável comum esteja com nomes diferentes nos dois dataframes, basta acrescentar essa informação ao comando.
+
+```{r}
+df2 <- 
+data.frame(Participantes = c("s1","s3","s5","s6","s7","s8","s9","s10"),
+           Trabalho = c(1,0,1,1,1,0,1,0),
+           Filhos = c(0,1,1,1,0,0,1,1))
+
+left_join(df,df2, by = c("id" = "Participantes"))
+```
+
+A função `semi_join` pode ser empregada para filtrar as observações (linhas) de df que possuem correspondência em df2.
+
+```{r}
+semi_join(df,df2, by = c("id" = "Participantes"))
+```
+
+Note que nenhuma variável é acrescentada, mas o dataframe é reduzido para apenas as observações de df que apresentam todas as informações em df2.
+O contrário também pode ser obtido, ou seja, as informações de df que NÃO APRESENTAM CORRESPONDÊNCIA em df2.
+Para isso, devemos usar a função `anti_join`.
+
+```{r}
+anti_join(df,df2, by = c("id" = "Participantes"))
+```
+
+## Combinação de observações (union, setdiff, intersect, bind_rows)
+
+O dataframe `df3` contém cinco observações (s6 a s10) compatíveis com as variáveis de `df`.
+sendo que as informações do sujeito s6 estão repetidas em ambos os dataframes.
+
+```{r include=FALSE}
+df3 <- 
+  data.frame(id = c("s6","s7","s8","s9","s10"),
+             sexo = c("masculino","feminino","masculino","masculino","feminino"),
+             idade = c(34,55,43,39,15),
+             escolaridade = c("superior","superior","médio","fundamental","médio"),
+             estado_civil = c("casado/a","casado/a","casado/a","casado/a","casado/a"),
+             renda = c(3500,2500,1000,1500,4000),
+             bonus = c(rep(500,5)),
+             renda_total = c(4000,3000,1500,2000,4500),
+             v1 = c(2,2,1,3,1),
+             v2 = c(5,3,2,1,1),
+             v3 = c(3,2,2,1,5),
+             v4 = c(5,2,2,3,1),
+             v5 = c(3,1,2,4,5))
+
+df3$escore <- df3 %>% select(v1:v5) %>% rowSums()
+
+# Atribuir labels às variáveis v1 a v5
+
+df3  <- apply_labels(df3,
+       v1 = "Você costuma se atrasar para as aulas?",
+       v2 = "Quanto você confia na sua capacidade de aprender?",
+       v3 = 'Quão bem você se relaciona com outras pessoas na sua escola?',
+       v4 = 'Quanto você gosta de sua escola?',
+       v5 = 'Quanto você procrastina para estudar?')
+glimpse(df)
+glimpse(df3)
+```
+
+Para unir todas as observações de df e df3 podemos usar a função `union`.
+
+```{r}
+union(df,df3)
+```
+
+Para selecionar somente as observações em comum nos dois dataframes, podemos usar a função `intersect`.
+
+```{r}
+intersect(df,df3)
+```
+
+Para selecionar somente as observações únicas de df, podemos usar a função `setdiff`.
+
+```{r}
+setdiff(df,df3)
+```
+
+Para unir os dataframes df e df3, mas colocando uma identificação de onde veio cada observação, podemos usar `bind_rows`.
+
+```{r}
+bind_rows(df,df3,.id="grupo")
+```
+
+Note, porém, que a saída incluiu duas vezes o sujeito s06, porque a função bind_rows simplesmente une os dois dataframes, sem fazer nenhum tipo de concatenação entre eles.
+
+## Exercícios
+
+```{r}
+dim(df) # ver número de linhas e colunas do dataframe df
+imdb <- readr::read_rds("imdb.rds")
+str(imdb)
+
+# crie uma variável id para todos os sujeitos do dataframe
+
+# selecione as variáveis título, duração, cor e gênero dos 1000 primeiros casos do banco de dados
+
+# monte um dataframe somente com os filmes do diretor Clint Eastwood
+
+# reorganize o banco de dados com filmes do diretor Clint Eastwood por ordem decrescente de receita
+
+# selecione uma amostra aleatória do dataframe imdb com 45% dos filmes relacionados.
+
+# crie uma tabela com as médias de orçamento e de receita, por diretor.
+
+```
+
+# Pacote `tidyr`
+
+O pacote `tidyr` também pertence à família `tidyverse` e apresenta algumas funções que facilitam a manipulação de variáveis, na maioria das vezes, envolvendo todo o dataframe.
+
+O objetivo do `tidyr` é ajudá-lo a criar dados organizados.
+Dados organizados são dados em que:
+
+-   Cada coluna é variável.
+
+-   Cada linha é uma observação.
+
+-   Cada célula é um único valor.
+
+O `tidyr` descreve uma maneira padrão de armazenamento de dados que é usada sempre que possível em todo dataframe.
+Se você garantir que seus dados estejam organizados, gastará menos tempo lutando com as ferramentas e mais tempo trabalhando em sua análise.
+
+## Eliminar valores ausentes com a função `drop_na`
+
+Função semelhante a na.omit, mas que permite informar em quais variáveis se quer verificar a existência de valores ausentes.
+
+```{r}
+# utilização genérica da função
+df %>% drop_na()
+
+# informando que só desejo eliminar as observações que continerem NA nas variáveis v1 a v5
+df %>% drop_na(v1:v5)
+```
+
+## Substituir valores ausentes com a função `replace_na`
+
+```{r}
+
+df %>% replace_na(list(idade = 0))
+#df %>% replace_na(list(idade = "não informado"))
+df %>% replace_na(list(idade = mean(idade, na.rm = TRUE)))
+```
+
+## Separar uma variável em duas colunas
+
+```{r}
+# paste("s",1:5,sep="")
+# seq(1000,by=500,length=6)
+# Criando um banco com informações para serem separadas.
+df4 <- df %>% mutate(cod = paste(id,c(2012,2011,2015,2011,2013,2014),sep = "/"))
+
+# para separar o código do sujeito e o ano de entrada podemos usar a função separate
+df4 %>% separate(cod, sep = "/", into = c("cod_suj","ano_de_entrada"))
+```
+
+No caso acima, a variável cod tinha um separador das informações: a barra.
+Mas há casos em que não se tem nem isso.
+
+```{r}
+# recriando df4 com três informações na última coluna
+# Os dois prmeiros caracteres informam o código do sujeito
+# os quatro caracteres seguintes informam o ano de entrada
+# o último caractere informa a ordem de registro
+
+df4 <- df %>% mutate(cod = paste(id,c(2012,2011,2015,2011,2013,2014),c(3,1,5,2,6,4),sep = ""))
+
+# para separar devemos identificar que os caracteres 2 e 6 são os últimos do primeiro e segundo blocos, respectivamente.
+
+df4 %>% separate(cod, sep = c(2,6), into = c("cod_suj","ano_de_entrada","ordem_de_entrada"))
+```
+
+## Alterar o layout dos dados
+
+Muitas vezes, para realizar análises estatísticas no R, é necessário alterar a disposição dos dados.
+A seguir são apresentadas algumas funções do tidyr que podem auxiliar nesse processo.
+Uma delas é a função `gather`.
+
+Suponhamos que no dataframe df as variáveis v1 a v5 são medidas de um mesmo atributo ao longo do tempo.Assim, desejamos representá-la em apenas uma coluna.\
+
+Para isso, devemos informar três argumentos:
+
+-   O `key`, que estabelece o nome da variável que irá receber as variáveis das colunas desejadas (v1 a v5).
+
+-   O `value`, que estabelece o nome da variável que irá conter os valores referentes à cada observação da variável `key`.
+
+-   A seleção das colunas que se deseja transformar em uma única coluna (v1 a v5.
+
+```{r}
+df5 <- df %>% gather(key = "v1_a_v5", value = "valores_de_v",v1:v5)
+```
+
+A função `spread` é a inversa da função `gather`.
+Ela transforma os valores dispostos em formato longo para o formato amplo.
+
+```{r}
+df5 %>% spread(v1_a_v5,valores_de_v)
+```
+
+Recentemnete, as funções `gather` e `spread` foram substituídas pelas funções `pivot_longer` e `pivot_wider`, respectivamente.
+A tendência é que as primeiras sejam descontinuadas em breve...
+
+## pivot_longer e pivot_wider (funções tidyr)
+
+Às vezes precisamos fazer transformações no formato do banco de dados para fazer alguma análise estatística ou gráfico.
+Precisamos transformar as linhas em colunas ou as colunas em linhas.
+Esses dois comandos do dplyr ajudam a realizar esses procedimentos.
+
+Começando pelo `pivot_longer()`, que permite montar um dataframe com **diferentes observações de um mesmo sujeito em diferentes linhas**.
+
+```{r}
+# Para usar a função pivot, os dados não podem conter labels ou levels
+# então, vamos retirar os labels dos itens v1 a v5.
+
+df$v1 <- unlab(df[,9])
+df$v2 <- unlab(df[,10])
+df$v3 <- unlab(df[,11])
+df$v4 <- unlab(df[,12])
+df$v5 <- unlab(df[,13])
+
+glimpse(df)
+
+df6 <- df %>% select (1,2,9:13) %>% pivot_longer(cols = 3:7,                 # variáveis a serem unidas em uma só. 
+                                                 names_to = "observações",   # nome dessa nova variável
+                                                 values_to = "valores")      # valores correspondentes à nova variável
+
+df5 %>% pander::pander()
+# podemos inserir mais variáveis
+# podemos usar uma função para identificar as variáveis que desejamos no formato longo.
+
+df %>% select (1,2,3,4,9:13) %>% pivot_longer(starts_with("v"),           # função para selecionar variáveis
+                                              names_to = "observações",   
+                                              values_to = "valores") %>% 
+  pander::pander()
+
+# Se houver dados faltantes na variável "valores", podemos eliminar essas observações com o comando values_drop_na
+
+df %>% select (1,2,3,4,9:13) %>% pivot_longer(starts_with("v"), 
+                                              names_to = "observações", 
+                                              values_to = "valores", 
+                                              values_drop_na = TRUE) %>% # função para remover dados faltantes.
+  pander::pander()
+
+```
+
+Este último comando diz, pegue o dataframe df, selecione as colunas 1,2,9:13 e aplique o pivot_longer considerando que eu quero transformar as colunas de 5 a 9 (essas colunas são do dataframe selecionado) em uma só variável, que vai se chamar "observações".
+Os valores das variáveis v1 a v5 vão para uma nova variável chamada "valores".
+
+Para voltar o df5 para o formato amplo, podemos usar a função `pivot_wider()`.
+
+```{r}
+#df5 %>% pivot_wider(names_from = observações,
+#                    values_from = valores)
+```
+
+```{r}
+
+```
